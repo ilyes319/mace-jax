@@ -5,7 +5,6 @@ import os
 from typing import List
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 
 fig_width = 2.5
@@ -48,50 +47,41 @@ def parse_args() -> argparse.Namespace:
 
 
 def plot(data: pd.DataFrame, output_path: str) -> None:
-    data = (
-        data.groupby(["path", "name", "mode", "interval"])
-        .agg([np.mean, np.std])
-        .reset_index()
-    )
+    data = data[data["interval"] > 0]
 
-    valid_data = data[data["mode"] == "eval"]
+    valid_data = data[data["mode"] == "eval_valid"]
     train_data = data[data["mode"] == "eval_train"]
+    test_data = data[data["mode"] == "eval_test"]
 
     fig, axes = plt.subplots(
         nrows=1, ncols=2, figsize=(2 * fig_width, fig_height), constrained_layout=True
     )
 
     ax = axes[0]
-    ax.plot(
-        valid_data["interval"],
-        valid_data["loss"]["mean"],
-        color=colors[0],
-        zorder=1,
-        label="Validation",
-    )
-    # ax.fill_between(
-    #     x=valid_data["interval"],
-    #     y1=valid_data["loss"]["mean"] - valid_data["loss"]["std"],
-    #     y2=valid_data["loss"]["mean"] + valid_data["loss"]["std"],
-    #     alpha=0.5,
-    #     zorder=-1,
-    #     color=colors[0],
-    # )
-    ax.plot(
-        train_data["interval"],
-        train_data["loss"]["mean"],
-        color=colors[3],
-        zorder=1,
-        label="Training",
-    )
-    # ax.fill_between(
-    #     x=train_data["interval"],
-    #     y1=train_data["loss"]["mean"] - train_data["loss"]["std"],
-    #     y2=train_data["loss"]["mean"] + train_data["loss"]["std"],
-    #     alpha=0.5,
-    #     zorder=-1,
-    #     color=colors[3],
-    # )
+    if len(valid_data) > 0:
+        ax.plot(
+            valid_data["interval"],
+            valid_data["loss"],
+            color=colors[0],
+            zorder=1,
+            label="Validation",
+        )
+    if len(train_data) > 0:
+        ax.plot(
+            train_data["interval"],
+            train_data["loss"],
+            color=colors[1],
+            zorder=1,
+            label="Training",
+        )
+    if len(test_data) > 0:
+        ax.plot(
+            test_data["interval"],
+            test_data["loss"],
+            color=colors[2],
+            zorder=1,
+            label="Test",
+        )
 
     ax.set_xscale("log")
     ax.set_yscale("log")
@@ -100,41 +90,34 @@ def plot(data: pd.DataFrame, output_path: str) -> None:
     ax.legend()
 
     ax = axes[1]
-    ax.plot(
-        valid_data["interval"],
-        valid_data["mae_e"]["mean"],
-        color=colors[1],
-        zorder=1,
-        label="MAE Energy [eV]",
-    )
-    # ax.fill_between(
-    #     x=valid_data["interval"],
-    #     y1=valid_data["mae_e"]["mean"] - valid_data["mae_e"]["std"],
-    #     y2=valid_data["mae_e"]["mean"] + valid_data["mae_e"]["std"],
-    #     alpha=0.5,
-    #     zorder=-1,
-    #     color=colors[1],
-    # )
-    ax.plot(
-        valid_data["interval"],
-        valid_data["mae_f"]["mean"],
-        color=colors[2],
-        zorder=1,
-        label="MAE Forces [eV/Å]",
-    )
-    # ax.fill_between(
-    #     x=valid_data["interval"],
-    #     y1=valid_data["mae_f"]["mean"] - valid_data["mae_f"]["std"],
-    #     y2=valid_data["mae_f"]["mean"] + valid_data["mae_f"]["std"],
-    #     alpha=0.5,
-    #     zorder=-1,
-    #     color=colors[2],
-    # )
+    if len(valid_data) > 0:
+        ax.plot(
+            valid_data["interval"],
+            1000 * valid_data["mae_f"],
+            color=colors[0],
+            zorder=1,
+            label="MAE Force [meV/A]",
+        )
+    if len(train_data) > 0:
+        ax.plot(
+            train_data["interval"],
+            1000 * train_data["mae_f"],
+            color=colors[1],
+            zorder=1,
+            label="MAE Force [meV/A]",
+        )
+    if len(test_data) > 0:
+        ax.plot(
+            test_data["interval"],
+            1000 * test_data["mae_f"],
+            color=colors[2],
+            zorder=1,
+            label="MAE Force [meV/A]",
+        )
 
-    # ax.set_ylim(bottom=0.0)
     ax.set_xscale("log")
     ax.set_yscale("log")
-    ax.set_xlabel("Epoch")
+    ax.set_xlabel("Interval")
     ax.legend()
 
     fig.savefig(output_path)
@@ -161,7 +144,7 @@ def main():
     )
 
     for (path, name), group in data.groupby(["path", "name"]):
-        plot(group, output_path=f"{path}/{name}.pdf")
+        plot(group, output_path=f"{path}/{name}.png")
 
 
 if __name__ == "__main__":
