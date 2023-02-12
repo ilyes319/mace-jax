@@ -54,7 +54,11 @@ def plot(data: pd.DataFrame, output_path: str) -> None:
     test_data = data[data["mode"] == "eval_test"]
 
     fig, axes = plt.subplots(
-        nrows=1, ncols=2, figsize=(2 * fig_width, fig_height), constrained_layout=True
+        nrows=1,
+        ncols=2,
+        figsize=(2 * fig_width, fig_height),
+        constrained_layout=True,
+        dpi=300,
     )
 
     ax = axes[0]

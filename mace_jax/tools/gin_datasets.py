@@ -123,6 +123,7 @@ def datasets(
         min_n_graph=min_n_graph,
         n_mantissa_bits=n_mantissa_bits,
         shuffle=True,
+        return_remainder=False,
     )
     valid_loader = data.GraphDataLoader(
         graphs=[

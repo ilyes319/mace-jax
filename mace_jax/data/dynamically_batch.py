@@ -52,6 +52,7 @@ def dynamically_batch(
     n_node: int,
     n_edge: int,
     n_graph: int,
+    return_remainder: bool = True,
 ) -> Generator[jraph.GraphsTuple, None, None]:
     """Dynamically batches trees with `jraph.GraphsTuples` up to specified sizes.
 
@@ -70,6 +71,8 @@ def dynamically_batch(
       n_edge: The maximum number of edges in a batch, at least the maximum sized
         graph.
       n_graph: The maximum number of graphs in a batch, at least 2.
+      return_remainder: If `True`, the last batch will be returned even if it is
+        smaller than the batch size.
 
     Yields:
       A `jraph.GraphsTuple` batch of graphs.
@@ -134,5 +137,5 @@ def dynamically_batch(
                 num_accumulated_graphs += element_graphs
 
     # We may still have data in batched graph.
-    if accumulated_graphs:
+    if accumulated_graphs and return_remainder:
         yield jraph.batch_np(accumulated_graphs)

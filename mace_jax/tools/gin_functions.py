@@ -297,7 +297,7 @@ def train(
             return loss_
 
         if eval_train or last_interval:
-            if isinstance(eval_train, (int, float)):
+            if not isinstance(eval_train, bool):
                 eval_and_print(train_loader.subset(eval_train), "eval_train")
             else:
                 eval_and_print(train_loader, "eval_train")

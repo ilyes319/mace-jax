@@ -144,7 +144,9 @@ def load_from_xyz(
     else:
         atoms_list = ase.io.read(file_or_path, format="extxyz", index=f":{num_configs}")
         if len(atoms_list) < num_configs:
-            logging.warning(f"Only {len(atoms_list)} configurations found. Expected at least {num_configs}.")
+            logging.warning(
+                f"Only {len(atoms_list)} configurations found. Expected at least {num_configs}."
+            )
 
     if not isinstance(atoms_list, list):
         atoms_list = [atoms_list]
@@ -292,6 +294,7 @@ class GraphDataLoader:
         min_n_graph: int = 1,
         shuffle: bool = True,
         n_mantissa_bits: Optional[int] = None,
+        return_remainder: bool = True,
     ):
         self.graphs = graphs
         self.n_node = n_node
@@ -302,6 +305,7 @@ class GraphDataLoader:
         self.min_n_graph = min_n_graph
         self.shuffle = shuffle
         self.n_mantissa_bits = n_mantissa_bits
+        self.return_remainder = return_remainder
         self._length = None
 
         keep_graphs = [
@@ -326,6 +330,7 @@ class GraphDataLoader:
             n_node=self.n_node,
             n_edge=self.n_edge,
             n_graph=self.n_graph,
+            return_remainder=self.return_remainder,
         ):
             if self.n_mantissa_bits is None:
                 yield jraph.pad_with_graphs(
